@@ -19,7 +19,7 @@ public class Main {
 
                 try(Socket client = serverSocket.accept()) {
                     // client <-- сообщения стоят в очереди в нём
-                    System.out.println("Debug: got new message " + client.toString());
+//                    System.out.println("Debug: got new message " + client.toString());
                     // Читать запрос - слушать сообщение
                     InputStreamReader streamReader = new InputStreamReader(client.getInputStream());
                     BufferedReader bufferedReader = new BufferedReader(streamReader);
@@ -34,23 +34,34 @@ public class Main {
                         line = bufferedReader.readLine();
                     }
 
-                    System.out.println("--REQUEST--");
-                    System.out.println(request);
+//                    System.out.println("--REQUEST--");
+//                    System.out.println(request);
 
-                    // Загрузить изображение с диска
-                    FileInputStream image2 = new FileInputStream("fav.png");
+                    // Получить первую строку хедера "GET / HTTP/1.1", затем тут же вытащить адрес
+                    String resource = request.toString().split("\n")[0].split(" ")[1];
+                    System.out.println(resource);
+
+
+                    if (resource.equals("/hello")) {
+                        OutputStream clientOutput = client.getOutputStream();
+                        clientOutput.write(("HTTP/1.1 200 OK\r\n").getBytes()); // Этот ответ нужен клиенту для ответа от сервера
+                        clientOutput.write(("\r\n").getBytes());                // Обязательная пустая строка
+                        clientOutput.write(("I' greeting you. And wish you a good day.\r\n").getBytes());   // Перевод текста в байты и отправка клиенту
+                    } else if (resource.equals("/goods")) {
+                        // Загрузить изображение с диска
+                        FileInputStream image2 = new FileInputStream("fav.png");
 //
-                    OutputStream clientOutput = client.getOutputStream();
-                    clientOutput.write(("HTTP/1.1 200 OK\r\n").getBytes());
-                    clientOutput.write(("\r\n").getBytes());
-
-                    clientOutput.write(image2.readAllBytes());  // Перевод изображения в байты и отправка клиенту
-//                    clientOutput.write(("IT IS NOT WRONG\r\n").getBytes());   // Перевод текста в байты и отправка клиенту
-                    clientOutput.flush();
-
-
-
-
+                        OutputStream clientOutput = client.getOutputStream();
+                        clientOutput.write(("HTTP/1.1 200 OK\r\n").getBytes());
+                        clientOutput.write(("\r\n").getBytes());
+                        clientOutput.write(image2.readAllBytes());  // Перевод изображения в байты и отправка клиенту
+                        clientOutput.flush();
+                    } else {
+                        OutputStream clientOutput = client.getOutputStream();
+                        clientOutput.write(("HTTP/1.1 200 OK\r\n").getBytes());
+                        clientOutput.write(("\r\n").getBytes());
+                        clientOutput.write(("Hello. What are you looking for?\r\n").getBytes());   // Перевод текста в байты и отправка клиенту
+                    }
 
                     client.close();
                 }
