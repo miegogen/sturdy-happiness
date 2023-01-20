@@ -1,7 +1,9 @@
 package server;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -21,6 +23,8 @@ public class Main {
                     // Читать запрос - слушать сообщение
                     InputStreamReader streamReader = new InputStreamReader(client.getInputStream());
                     BufferedReader bufferedReader = new BufferedReader(streamReader);
+
+                    // Читает первый запрос от пользователя
                     StringBuilder request = new StringBuilder();
 
                     String line = bufferedReader.readLine();    // держит одно сообщение за раз
@@ -33,6 +37,22 @@ public class Main {
                     System.out.println("--REQUEST--");
                     System.out.println(request);
 
+                    // Загрузить изображение с диска
+                    FileInputStream image2 = new FileInputStream("fav.png");
+//
+                    OutputStream clientOutput = client.getOutputStream();
+                    clientOutput.write(("HTTP/1.1 200 OK\r\n").getBytes());
+                    clientOutput.write(("\r\n").getBytes());
+
+                    clientOutput.write(image2.readAllBytes());  // Перевод изображения в байты и отправка клиенту
+//                    clientOutput.write(("IT IS NOT WRONG\r\n").getBytes());   // Перевод текста в байты и отправка клиенту
+                    clientOutput.flush();
+
+
+
+
+
+                    client.close();
                 }
             }
         }
